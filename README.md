@@ -9,7 +9,10 @@ Usage:
 
 Other files contain other resources. From what I discovered:
 
-* sotes.exe: almost exclusively map data. Haven't tried to decipher it.
-* sotesd.dll: **sprites**, audio samples.
-* sotesp.dll: more audio samples.
-* sotesp.dll: I have no idea!
+* `sotes.exe`: almost exclusively map data. Haven't tried to decipher it.
+* `sotesd.dll`: **sprites**, audio samples.
+* `sotesp.dll`: more audio samples.
+* `sotesp.dll`: I have no idea...
+
+As far as I'm concerned, audio samples are encrypted in some way, even though
+they have begin with uncompressed `RIFF` magic number.
