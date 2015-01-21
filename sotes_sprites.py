@@ -30,92 +30,64 @@ def extract_image(f, target_path):
 
 	#found by trial-and-error...
 	if magic == 31:
-		use_palette = ord(file_data[1073]) & 1 != 1
 		pixel_data_offset = 59
 
 	elif magic == 37:
-		use_palette = ord(file_data[1073]) & 1 != 1
 		pixel_data_offset = 73
 
 	elif magic == 45:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 88
 
 	elif magic == 51:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 102
 
 	elif magic == 59:
-		use_palette = False
 		pixel_data_offset = 66
 
 	elif magic == 67:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 80
 
 	elif magic == 95:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 86
 
 	elif magic == 73:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 94
 
 	elif magic == 85:
-		use_palette = True
 		pixel_data_offset = 67
 
 	elif magic == 93:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 81
 
 	elif magic == 101:
-		use_palette = False
 		pixel_data_offset = 95
 
 	elif magic == 103:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 100
 
 	elif magic == 107:
-		use_palette = False
 		pixel_data_offset = 59
 
 	elif magic == 115:
-		use_palette = False
 		pixel_data_offset = 73
 
 	elif magic == 121:
-		use_palette = False
 		pixel_data_offset = 87
 
 	elif magic == 129:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 102
 
 	elif magic == 137:
-		use_palette = False
 		pixel_data_offset = 66
 
 	elif magic == 143:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 80
 
 	elif magic == 151:
-		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 94
 
 	else:
 		raise MagicException('Unknown magic', magic)
-
-	if use_palette:
-		channels = 1
-		palette_offset = 32
-		palette = {}
-		for i in range(256):
-			palette[i] = unpack('BBBB', file_data[palette_offset + i*4:palette_offset + i*4 + 4])
-	else:
-		channels = 3
 
 	pixel_data = file_data[32 + 256 * 4 + pixel_data_offset:]
 	weird_data = unpack('8I', file_data[0:32])
@@ -133,11 +105,16 @@ def extract_image(f, target_path):
 		[0],
 		len(pixel_data))
 
-	print 'magic  ', magic
-	print 'offset ', pixel_data_offset
-	print 'width  ', width
-	print 'height ', height
-	print 'palette', use_palette
+	use_palette = width * height * 3 != len(pixel_data)
+
+	if use_palette:
+		channels = 1
+		palette_offset = 32
+		palette = {}
+		for i in range(256):
+			palette[i] = unpack('BBBB', file_data[palette_offset + i*4:palette_offset + i*4 + 4])
+	else:
+		channels = 3
 
 	img = Image.new('RGB', (width, height), 'black')
 	pixels = img.load()
