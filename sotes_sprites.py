@@ -4,6 +4,9 @@ import Image
 import os, sys
 from struct import unpack
 
+class MagicException(Exception):
+	pass
+
 def extract_image(f, target_path):
 	file_data = f.read()
 
@@ -106,7 +109,7 @@ def extract_image(f, target_path):
 		width = unpack('I', file_data[16:20])[0] - unpack('I', file_data[24:28])[0]
 
 	else:
-		raise Exception('Unknown magic', magic)
+		raise MagicException('Unknown magic', magic)
 
 	if use_palette:
 		channels = 1
@@ -158,7 +161,7 @@ for path in paths:
 			try:
 				extract_image(f, target_path)
 				print 'Image saved'
-			except Exception as e:
+			except MagicException as e:
 				print 'Error', e
 
 	print
