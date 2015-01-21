@@ -4,9 +4,6 @@ import Image
 import os, sys
 from struct import unpack
 
-class MagicException(Exception):
-	pass
-
 def guess_image_dimension(
 	dimension_candidates,
 	main_delta,
@@ -26,72 +23,10 @@ def guess_image_dimension(
 def extract_image(f, target_path):
 	file_data = f.read()
 
-	magic = ord(file_data[0])
-
-	#found by trial-and-error...
-	if magic == 31:
-		pixel_data_offset = 59
-
-	elif magic == 37:
-		pixel_data_offset = 73
-
-	elif magic == 45:
-		pixel_data_offset = 88
-
-	elif magic == 51:
-		pixel_data_offset = 102
-
-	elif magic == 59:
-		pixel_data_offset = 66
-
-	elif magic == 67:
-		pixel_data_offset = 80
-
-	elif magic == 95:
-		pixel_data_offset = 86
-
-	elif magic == 73:
-		pixel_data_offset = 94
-
-	elif magic == 85:
-		pixel_data_offset = 67
-
-	elif magic == 93:
-		pixel_data_offset = 81
-
-	elif magic == 101:
-		pixel_data_offset = 95
-
-	elif magic == 103:
-		pixel_data_offset = 100
-
-	elif magic == 107:
-		pixel_data_offset = 59
-
-	elif magic == 115:
-		pixel_data_offset = 73
-
-	elif magic == 121:
-		pixel_data_offset = 87
-
-	elif magic == 129:
-		pixel_data_offset = 102
-
-	elif magic == 137:
-		pixel_data_offset = 66
-
-	elif magic == 143:
-		pixel_data_offset = 80
-
-	elif magic == 151:
-		pixel_data_offset = 94
-
-	else:
-		raise MagicException('Unknown magic', magic)
-
-	pixel_data = file_data[32 + 256 * 4 + pixel_data_offset:]
 	weird_data = unpack('8I', file_data[0:32])
 	weird_data2 = unpack('14I', file_data[32 + 256 * 4:32 + 256 * 4 + 56])
+	pixel_data_offset = 56 + weird_data2[12] - weird_data2[10]
+	pixel_data = file_data[32 + 256 * 4 + pixel_data_offset:]
 
 	width = guess_image_dimension(
 		weird_data[1:5],
@@ -148,7 +83,7 @@ for path in paths:
 			try:
 				extract_image(f, target_path)
 				print 'Image saved'
-			except MagicException as e:
+			except Exception as e:
 				print 'Error', e
 
 	print
