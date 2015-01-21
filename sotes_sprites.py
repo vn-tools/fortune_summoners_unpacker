@@ -16,97 +16,78 @@ def extract_image(f, target_path):
 	if magic == 31:
 		use_palette = ord(file_data[1073]) & 1 != 1
 		pixel_data_offset = 59
-		width = unpack('I', file_data[12:16])[0] - unpack('I', file_data[24:28])[0]
 
 	elif magic == 37:
 		use_palette = ord(file_data[1073]) & 1 != 1
 		pixel_data_offset = 73
-		width = unpack('I', file_data[16:20])[0] - unpack('I', file_data[24:28])[0]
 
 	elif magic == 45:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 88
-		width = unpack('I', file_data[8:12])[0] - unpack('I', file_data[24:28])[0]
 
 	elif magic == 51:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 102
-		width = unpack('I', file_data[16:20])[0] - unpack('I', file_data[24:28])[0]
 
 	elif magic == 59:
 		use_palette = False
 		pixel_data_offset = 66
-		width = unpack('I', file_data[8:12])[0] - 13019
 
 	elif magic == 67:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 80
-		width = unpack('I', file_data[12:16])[0] - 13013
 
 	elif magic == 95:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 86
-		width = unpack('I', file_data[8:12])[0] - 12987
 
 	elif magic == 73:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 94
-		width = unpack('I', file_data[4:8])[0] - 13005
 
 	elif magic == 85:
 		use_palette = True
 		pixel_data_offset = 67
-		width = unpack('I', file_data[16:20])[0] - unpack('I', file_data[24:28])[0] + 2
 
 	elif magic == 93:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 81
-		width = unpack('I', file_data[8:12])[0] - unpack('I', file_data[24:28])[0] + 1
 
 	elif magic == 101:
 		use_palette = False
 		pixel_data_offset = 95
-		width = unpack('I', file_data[16:20])[0] - unpack('I', file_data[24:28])[0] + 1
 
 	elif magic == 103:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 100
-		width = unpack('I', file_data[16:20])[0] - 12979
 
 	elif magic == 107:
 		use_palette = False
 		pixel_data_offset = 59
-		width = unpack('I', file_data[8:12])[0] - unpack('I', file_data[24:28])[0] + 1
 
 	elif magic == 115:
 		use_palette = False
 		pixel_data_offset = 73
-		width = unpack('I', file_data[12:16])[0] - unpack('I', file_data[24:28])[0] + 1
 
 	elif magic == 121:
 		use_palette = False
 		pixel_data_offset = 87
-		width = unpack('I', file_data[4:8])[0] - unpack('I', file_data[24:28])[0] + 1
 
 	elif magic == 129:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 102
-		width = unpack('I', file_data[12:16])[0] - unpack('I', file_data[24:28])[0]
 
 	elif magic == 137:
 		use_palette = False
 		pixel_data_offset = 66
-		width = unpack('I', file_data[4:8])[0] - unpack('I', file_data[24:28])[0]
 
 	elif magic == 143:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 80
-		width = unpack('I', file_data[8:12])[0] - unpack('I', file_data[24:28])[0]
 
 	elif magic == 151:
 		use_palette = ord(file_data[1131]) & 4 == 4
 		pixel_data_offset = 94
-		width = unpack('I', file_data[16:20])[0] - unpack('I', file_data[24:28])[0]
 
 	else:
 		raise MagicException('Unknown magic', magic)
@@ -121,6 +102,22 @@ def extract_image(f, target_path):
 		channels = 3
 
 	pixel_data = file_data[32 + 256 * 4 + pixel_data_offset:]
+	weird_data = unpack('8I', file_data[0:32])
+
+	possible_widths = weird_data[1:5]
+	width_difference = weird_data[6]
+	width = False
+	for possible_width_base in possible_widths:
+		for width_fix in range(4):
+			possible_width = possible_width_base + width_fix - width_difference
+			if possible_width < 0:
+				continue
+			if len(pixel_data) % possible_width == 0:
+				width = possible_width
+				break
+	if width is False:
+		raise Exception('Cannot figure out the image width')
+
 	height = len(pixel_data) / (width * channels)
 
 	print 'magic  ', magic
