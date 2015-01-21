@@ -7,6 +7,22 @@ from struct import unpack
 class MagicException(Exception):
 	pass
 
+def guess_image_dimension(
+	dimension_candidates,
+	main_delta,
+	additional_deltas,
+	pixels_size):
+	dimension = False
+	for base in dimension_candidates:
+		for delta in additional_deltas:
+			possible_dimension = base + delta + main_delta
+			if possible_dimension < 0:
+				continue
+			if pixels_size % possible_dimension == 0:
+				return possible_dimension
+	raise Exception('Cannot figure out the image dimensions')
+
+
 def extract_image(f, target_path):
 	file_data = f.read()
 
@@ -103,22 +119,19 @@ def extract_image(f, target_path):
 
 	pixel_data = file_data[32 + 256 * 4 + pixel_data_offset:]
 	weird_data = unpack('8I', file_data[0:32])
+	weird_data2 = unpack('14I', file_data[32 + 256 * 4:32 + 256 * 4 + 56])
 
-	possible_widths = weird_data[1:5]
-	width_difference = weird_data[6]
-	width = False
-	for possible_width_base in possible_widths:
-		for width_fix in range(4):
-			possible_width = possible_width_base + width_fix - width_difference
-			if possible_width < 0:
-				continue
-			if len(pixel_data) % possible_width == 0:
-				width = possible_width
-				break
-	if width is False:
-		raise Exception('Cannot figure out the image width')
+	width = guess_image_dimension(
+		weird_data[1:5],
+		- weird_data[6],
+		[0, 1, 2, 3],
+		len(pixel_data))
 
-	height = len(pixel_data) / (width * channels)
+	height = guess_image_dimension(
+		weird_data2[0:5],
+		- weird_data2[10],
+		[0],
+		len(pixel_data))
 
 	print 'magic  ', magic
 	print 'offset ', pixel_data_offset
