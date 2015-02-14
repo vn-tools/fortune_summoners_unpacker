@@ -1,3 +1,7 @@
+**Note**: this tool has been merged into a bigger project, [arc_unpacker](https://github.com/vn-tools/arc_unpacker.git), therefore this repository remains for mainly archeological purposes.
+
+---
+
 A tool for extracting sprites from Fortune Summoners: Secret of the Elemental
 Stone. Tested on the Steam version only.
 
@@ -15,4 +19,4 @@ Other files contain other resources. From what I discovered:
 * `sotesp.dll`: I have no idea...
 
 As far as I'm concerned, audio samples are encrypted in some way, even though
-they have begin with uncompressed `RIFF` magic number.
+they begin with the expected `RIFF` magic number.
